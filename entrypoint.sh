@@ -77,6 +77,7 @@ do
 done
 
 # merge PR
-gh pr merge $GITHUB_HEAD_REF --merge --delete-branch
+echo ready to merge
+# gh pr merge $GITHUB_HEAD_REF --merge --delete-branch
 
 
