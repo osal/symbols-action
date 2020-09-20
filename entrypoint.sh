@@ -7,6 +7,8 @@ echo $(gh --version)
 echo $(aws --version)
 echo $(jq --version)
 
+git fetch origin --depth=1 > /dev/null 2>&1
+
 # check for deleted JSON files
 DELETED=$(git diff --name-only --diff-filter=D origin/master)
 if [ -n "$DELETED" ]; then
