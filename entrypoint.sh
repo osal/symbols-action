@@ -2,10 +2,10 @@
 
 set -x
 
-echo $(git version)
-echo $(gh --version)
-echo $(aws --version)
-echo $(jq --version)
+git version
+gh --version
+aws --version
+jq --version
 
 git fetch origin --depth=1 > /dev/null 2>&1
 
@@ -14,8 +14,8 @@ DELETED=$(git diff --name-only --diff-filter=D origin/master)
 if [ -n "$DELETED" ]; then
   echo Deleting files is forbidden
   echo These files were deleted:
-  echo $DELETED
-  gh pr review $GITHUB_HEAD_REF -r -b "Deleting files is forbidden"
+  echo "$DELETED"
+  gh pr review "$GITHUB_HEAD_REF" -r -b "Deleting files is forbidden\nDeleted: $DELETED"
   exit 1
 fi
 
@@ -24,8 +24,8 @@ RENAMED=$(git diff --name-only --diff-filter=R origin/master)
 if [ -n "$RENAMED" ]; then
   echo Renaming files is forbidden
   echo These files were renamed:
-  echo $RENAMED
-  gh pr review $GITHUB_HEAD_REF -r -b "Renaming files is forbidden"
+  echo "$RENAMED"
+  gh pr review "$GITHUB_HEAD_REF" -r -b "Renaming files is forbidden\nRenamed: $RENAMED"
   exit 1
 fi
 
@@ -34,8 +34,8 @@ ADDED=$(git diff --name-only --diff-filter=A origin/master)
 if [ -n "$ADDED" ]; then
   echo Adding files is forbidden
   echo These files were added:
-  echo $ADDED
-  gh pr review $GITHUB_HEAD_REF -r -b "Adding files is forbidden"
+  echo "$ADDED"
+  gh pr review "$GITHUB_HEAD_REF" -r -b "Adding files is forbidden\nAdded: $ADDED"
   exit 1
 fi
 
@@ -43,28 +43,30 @@ fi
 MODIFIED=$(git diff --name-only origin/master | grep ".json$")
 if [ -z "$MODIFIED" ]; then
   echo No symbol info files were modified
-  exit 0
+  gh pr review "$GITHUB_HEAD_REF" -r -b "No symbol info files (JSON) were modified"
+  exit 1
 fi
 
 # save new versions
-for F in $MODIFIED; do cp $F $F.new; done
+for F in $MODIFIED; do cp "$F" "$F.new"; done
 
 # save old versions
 git checkout -b old origin/master
-for F in $MODIFIED; do cp $F $F.old; done
+for F in $MODIFIED; do cp "$F" "$F.old"; done
 
 # download inspect tool
+AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_INSPECT AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_INSPECT \
 aws s3 cp s3://tradingview-customers-inspect/inspect_r4.4 ./inspect --no-progress && chmod +x ./inspect
 
 # check files
 FAILED=false
 for F in $MODIFIED; do
-  echo Checking $F 
-  ./inspect symfile --old=$F.old --new=$F.new --log-file=stdout --report-file=report.txt
-  ./inspect symfile diff --old=$F.old --new=$F.new --log-file=stdout
-  RESULT=$(grep FAIL report.txt | wc -l)
-  [ $RESULT -ne 0 ] && cat report.txt && gh pr review $GITHUB_HEAD_REF -r -b "Proposed changes to file $F are invalid"
-  [ $RESULT -ne 0 ] && FAILED=true
+  echo Checking "$F"
+  ./inspect symfile --old="$F.old" --new="$F.new" --log-file=stdout --report-file=report.txt
+  ./inspect symfile diff --old="$F.old" --new="$F.new" --log-file=stdout
+  RESULT=$(grep -c FAIL report.txt)
+  [ "$RESULT" -ne 0 ] && cat report.txt && gh pr review "$GITHUB_HEAD_REF" -r -b "Proposed changes to file $F are invalid"
+  [ "$RESULT" -ne 0 ] && FAILED=true
 done
 
 [ $FAILED = "true" ] && exit 1
@@ -73,9 +75,9 @@ done
 echo Uploading symbol info
 for F in $MODIFIED;
 do
-  FINAL_NAME=$(dirname $F)_$(basename $F)
-  aws s3 cp $F.new s3://tradingview-customers-symbolinfo/staging/$FINAL_NAME --no-progress
-  aws s3 cp $F.new s3://tradingview-customers-symbolinfo/production/$FINAL_NAME --no-progress
+  FINAL_NAME=$(dirname "$F")_$(basename "$F")
+  aws s3 cp "$F.new" "s3://tradingview-customers-symbolinfo/staging/$FINAL_NAME" --no-progress
+  aws s3 cp "$F.new" "s3://tradingview-customers-symbolinfo/production/$FINAL_NAME" --no-progress
 done
 
 # merge PR
