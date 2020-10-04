@@ -57,6 +57,8 @@ for F in $MODIFIED; do cp "$F" "$F.old"; done
 # download inspect tool
 AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_INSPECT AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_INSPECT \
 aws s3 cp s3://tradingview-customers-inspect/inspect_r4.4 ./inspect --no-progress && chmod +x ./inspect
+./inspect version
+exit 0
 
 # check files
 FAILED=false
