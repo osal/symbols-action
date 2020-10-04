@@ -72,7 +72,7 @@ for F in $MODIFIED; do
 done
 
 [ $FAILED = "true" ] && exit 1
-
+exit 0
 # upload symbol info
 echo Uploading symbol info
 for F in $MODIFIED;
