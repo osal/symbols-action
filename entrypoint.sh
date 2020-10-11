@@ -56,18 +56,19 @@ for F in $MODIFIED; do cp "$F" "$F.old"; done
 
 # download inspect tool
 AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_INSPECT AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_INSPECT \
-aws s3 cp s3://tradingview-customers-inspect/inspect_r4.4 ./inspect && chmod +x ./inspect
+aws s3 cp s3://tradingview-customers-inspect/inspect_md ./inspect && chmod +x ./inspect
 ./inspect version
 
 # check files
 FAILED=false
 for F in $MODIFIED; do
   echo Checking "$F"
-  ./inspect symfile --old="$F.old" --new="$F.new" --log-file=stdout --report-file=report.txt
+  ./inspect symfile --old="$F.old" --new="$F.new" --log-file=stdout --report-file=report.txt --report-format=github
   ./inspect symfile diff --old="$F.old" --new="$F.new" --log-file=stdout
   RESULT=$(grep -c FAIL report.txt)
   REPORT=$(cat report.txt)
-  [ "$RESULT" -ne 0 ] && cat report.txt && gh pr review "$GITHUB_HEAD_REF" -r -b "Proposed changes to file $F are invalid\n$REPORT"
+  [ "$RESULT" -ne 0 ] && gh pr review "$GITHUB_HEAD_REF" -r -b "#### Proposed changes to file $F are invalid"
+  gh pr review "$GITHUB_HEAD_REF" -r -b "$REPORT"
   [ "$RESULT" -ne 0 ] && FAILED=true
 done
 
