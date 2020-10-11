@@ -67,8 +67,11 @@ for F in $MODIFIED; do
   ./inspect symfile diff --old="$F.old" --new="$F.new" --log-file=stdout
   RESULT=$(grep -c FAIL report.txt)
   REPORT=$(cat report.txt)
-  [ "$RESULT" -ne 0 ] && gh pr review "$GITHUB_HEAD_REF" -r -b "#### Proposed changes to file $F are invalid"
-  gh pr review "$GITHUB_HEAD_REF" -r -b "$REPORT"
+  FILE_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_HEAD_REF/$F"
+
+  [ "$RESULT" -ne 0 ] && gh pr review "$GITHUB_HEAD_REF" -c -b "$REPORT"
+  [ "$RESULT" -ne 0 ] && gh pr review "$GITHUB_HEAD_REF" -r -b "Proposed changes to file [$F]($FILE_URL) are invalid"
+  [ "$RESULT" -eq 0 ] && gh pr review "$GITHUB_HEAD_REF" -a -b "$REPORT"
   [ "$RESULT" -ne 0 ] && FAILED=true
 done
 
