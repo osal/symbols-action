@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -x
-
 git version
 gh --version
 aws --version
@@ -56,7 +54,7 @@ for F in $MODIFIED; do cp "$F" "$F.old"; done
 
 # download inspect tool
 AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_INSPECT AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_INSPECT \
-aws s3 cp s3://tradingview-customers-inspect/inspect_md ./inspect && chmod +x ./inspect
+aws s3 cp "$S3_BUCKET_INSPECT/inspect_md" ./inspect && chmod +x ./inspect
 ./inspect version
 
 # check files
@@ -82,8 +80,8 @@ echo Uploading symbol info
 for F in $MODIFIED;
 do
   FINAL_NAME=$(dirname "$F")_$(basename "$F")
-  aws s3 cp "$F.new" "s3://tradingview-customers-symbolinfo/staging/$FINAL_NAME" --no-progress
-  aws s3 cp "$F.new" "s3://tradingview-customers-symbolinfo/production/$FINAL_NAME" --no-progress
+  aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/staging/$FINAL_NAME" --no-progress
+  aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/production/$FINAL_NAME" --no-progress
 done
 
 # merge PR
