@@ -80,8 +80,7 @@ echo Uploading symbol info
 for F in $MODIFIED;
 do
   FINAL_NAME=$(dirname "$F")_$(basename "$F")
-  aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/staging/$FINAL_NAME" --no-progress
-  aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/production/$FINAL_NAME" --no-progress
+  aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/$SYMBOLS_PREFIX/$FINAL_NAME" --no-progress
 done
 
 # merge PR
