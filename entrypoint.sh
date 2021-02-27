@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 git version
 gh --version
 aws --version
@@ -53,7 +55,6 @@ git checkout -b old origin/master
 for F in $MODIFIED; do cp "$F" "$F.old"; done
 
 # download inspect tool
-AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID_INSPECT AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY_INSPECT \
 aws s3 cp "$S3_BUCKET_INSPECT/inspect_md" ./inspect && chmod +x ./inspect
 ./inspect version
 
