@@ -7,6 +7,10 @@ gh --version
 aws --version
 jq --version
 
+env > env.txt
+
+cat env.txt
+
 git fetch origin --depth=1 > /dev/null 2>&1
 
 # check for deleted JSON files
