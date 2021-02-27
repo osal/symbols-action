@@ -54,7 +54,7 @@ for F in $MODIFIED; do cp "$F" "$F.old"; done
 
 # download inspect tool
 aws s3 cp "$S3_BUCKET_INSPECT/inspect_md" ./inspect --no-progress && chmod +x ./inspect
-./inspect version
+echo inpsect info: $(./inspect version)
 
 # check files
 FAILED=false
@@ -73,14 +73,15 @@ for F in $MODIFIED; do
   [ "$RESULT" -ne 0 ] && FAILED=true
 done
 
-[ $FAILED = "true" ] && exit 1
-exit 0
+[ $FAILED = "true" ] && echo some tests have failed && exit 1
+
 # upload symbol info
-echo Uploading symbol info
+echo uploading symbol info
 for F in $MODIFIED;
 do
   FINAL_NAME=$(dirname "$F")_$(basename "$F")
-  aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/$SYMBOLS_PREFIX/$FINAL_NAME" --no-progress
+  echo uploading $F.new to $S3_BUCKET_SYMBOLS/$SYMBOLS_PREFIX/$FINAL_NAME
+  # aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/$SYMBOLS_PREFIX/$FINAL_NAME" --no-progress
 done
 
 # merge PR
