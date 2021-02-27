@@ -1,15 +1,9 @@
 #!/bin/bash
 
-set -x
-
 git version
 gh --version
 aws --version
 jq --version
-
-env > env.txt
-
-cat env.txt
 
 git fetch origin --depth=1 > /dev/null 2>&1
 
@@ -59,7 +53,7 @@ git checkout -b old origin/master
 for F in $MODIFIED; do cp "$F" "$F.old"; done
 
 # download inspect tool
-aws s3 cp "$S3_BUCKET_INSPECT/inspect_md" ./inspect && chmod +x ./inspect
+aws s3 cp "$S3_BUCKET_INSPECT/inspect_md" ./inspect --no-progress && chmod +x ./inspect
 ./inspect version
 
 # check files
@@ -91,6 +85,6 @@ done
 
 # merge PR
 echo ready to merge
-# gh pr merge $GITHUB_HEAD_REF --merge --delete-branch
+# gh pr merge $PR_NUMBER --merge --delete-branch
 
 
