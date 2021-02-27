@@ -71,10 +71,11 @@ for F in $MODIFIED; do
   RESULT=$(grep -c FAIL report.txt)
   REPORT=$(cat report.txt)
   FILE_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_HEAD_REF/$F"
+  PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 
-  [ "$RESULT" -ne 0 ] && gh pr review "$GITHUB_HEAD_REF" -c -b "$REPORT"
-  [ "$RESULT" -ne 0 ] && gh pr review "$GITHUB_HEAD_REF" -r -b "Proposed changes to file [$F]($FILE_URL) are invalid"
-  [ "$RESULT" -eq 0 ] && gh pr review "$GITHUB_HEAD_REF" -a -b "$REPORT"
+  [ "$RESULT" -ne 0 ] && gh pr review $PR_NUMBER -c -b "$REPORT"
+  [ "$RESULT" -ne 0 ] && gh pr review $PR_NUMBER -r -b "Proposed changes to file [$F]($FILE_URL) are invalid"
+  [ "$RESULT" -eq 0 ] && gh pr review $PR_NUMBER -a -b "$REPORT"
   [ "$RESULT" -ne 0 ] && FAILED=true
 done
 
