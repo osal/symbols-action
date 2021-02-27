@@ -74,13 +74,14 @@ for F in $MODIFIED; do
 done
 
 [ $FAILED = "true" ] && exit 1
-exit 0
+
 # upload symbol info
 echo Uploading symbol info
 for F in $MODIFIED;
 do
   FINAL_NAME=$(dirname "$F")_$(basename "$F")
-  aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/$SYMBOLS_PREFIX/$FINAL_NAME" --no-progress
+  echo uploading $F.new to $S3_BUCKET_SYMBOLS/$SYMBOLS_PREFIX/$FINAL_NAME
+  # aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/$SYMBOLS_PREFIX/$FINAL_NAME" --no-progress
 done
 
 # merge PR
