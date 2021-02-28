@@ -14,8 +14,8 @@ if [ -n "$DELETED" ]; then
   echo Deleting files is forbidden > deleted_report
   echo These files were deleted: >> deleted_report
   echo "$DELETED" >> deleted_report
-  deleted_report=$(cat deleted_report)
-  gh pr review $PR_NUMBER -r -b "$deleted_report"
+  DELETED_REPORT=$(cat deleted_report)
+  gh pr review $PR_NUMBER -r -b "$DELETED_REPORT"
   exit 1
 fi
 
@@ -25,8 +25,8 @@ if [ -n "$RENAMED" ]; then
   echo Renaming files is forbidden > renamed_report
   echo These files were renamed: >> renamed_report
   echo "$RENAMED" >> renamed_report
-  renamed_report = $(cat renamed_report)
-  gh pr review $PR_NUMBER -r -b "$renamed_report"
+  RENAMED_REPORT=$(cat renamed_report)
+  gh pr review $PR_NUMBER -r -b "$RENAMED_REPORT"
   exit 1
 fi
 
