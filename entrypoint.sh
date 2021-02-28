@@ -11,20 +11,22 @@ git fetch origin --depth=1 > /dev/null 2>&1
 # check for deleted JSON files
 DELETED=$(git diff --name-only --diff-filter=D origin/master)
 if [ -n "$DELETED" ]; then
-  echo Deleting files is forbidden
-  echo These files were deleted:
-  echo "$DELETED"
-  gh pr review $PR_NUMBER -r -b "Deleting files is forbidden\nDeleted: $DELETED"
+  echo Deleting files is forbidden > deleted_report
+  echo These files were deleted: >> deleted_report
+  echo "$DELETED" >> deleted_report
+  deleted_report=$(cat deleted_report)
+  gh pr review $PR_NUMBER -r -b "$deleted_report"
   exit 1
 fi
 
 # check for renamed JSON files
 RENAMED=$(git diff --name-only --diff-filter=R origin/master)
 if [ -n "$RENAMED" ]; then
-  echo Renaming files is forbidden
-  echo These files were renamed:
-  echo "$RENAMED"
-  gh pr review $PR_NUMBER -r -b "Renaming files is forbidden\nRenamed: $RENAMED"
+  echo Renaming files is forbidden > renamed_report
+  echo These files were renamed: >> renamed_report
+  echo "$RENAMED" >> renamed_report
+  renamed_report = $(cat renamed_report)
+  gh pr review $PR_NUMBER -r -b "$renamed_report"
   exit 1
 fi
 
