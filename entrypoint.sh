@@ -77,9 +77,10 @@ done
 
 # upload symbol info
 echo uploading symbol info
+INTEGRATION_NAME=${GITHUB_REPOSITORY##*/}
 for F in $MODIFIED;
 do
-  FINAL_NAME=$(dirname "$F")_$(basename "$F")
+  FINAL_NAME=${INTEGRATION_NAME}_$(basename "$F")
   echo uploading $F.new to $S3_BUCKET_SYMBOLS/$SYMBOLS_PREFIX/$FINAL_NAME
   # aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/$SYMBOLS_PREFIX/$FINAL_NAME" --no-progress
 done
