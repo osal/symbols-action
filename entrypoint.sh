@@ -22,8 +22,8 @@ fi
 # check for renamed JSON files
 RENAMED=$(git diff --name-only --diff-filter=R origin/master)
 if [ -n "$RENAMED" ]; then
-  echo Renaming files is forbidden > renamed_report
-  echo These files were renamed: >> renamed_report
+  echo "### :red_circle: Renaming JSON files is forbidden" > renamed_report
+  echo "#### These files were renamed:" >> renamed_report
   echo "$RENAMED" >> renamed_report
   RENAMED_REPORT=$(cat renamed_report)
   gh pr review $PR_NUMBER -r -b "$RENAMED_REPORT"
