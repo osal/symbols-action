@@ -5,6 +5,7 @@ gh --version
 aws --version
 jq --version
 
+PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 git fetch origin --depth=1 > /dev/null 2>&1
 
 # check for deleted JSON files
@@ -13,7 +14,7 @@ if [ -n "$DELETED" ]; then
   echo Deleting files is forbidden
   echo These files were deleted:
   echo "$DELETED"
-  gh pr review "$GITHUB_HEAD_REF" -r -b "Deleting files is forbidden\nDeleted: $DELETED"
+  gh pr review $PR_NUMBER -r -b "Deleting files is forbidden\nDeleted: $DELETED"
   exit 1
 fi
 
@@ -23,7 +24,7 @@ if [ -n "$RENAMED" ]; then
   echo Renaming files is forbidden
   echo These files were renamed:
   echo "$RENAMED"
-  gh pr review "$GITHUB_HEAD_REF" -r -b "Renaming files is forbidden\nRenamed: $RENAMED"
+  gh pr review $PR_NUMBER -r -b "Renaming files is forbidden\nRenamed: $RENAMED"
   exit 1
 fi
 
@@ -33,7 +34,7 @@ if [ -n "$ADDED" ]; then
   echo Adding files is forbidden
   echo These files were added:
   echo "$ADDED"
-  gh pr review "$GITHUB_HEAD_REF" -r -b "Adding files is forbidden\nAdded: $ADDED"
+  gh pr review $PR_NUMBER -r -b "Adding files is forbidden\nAdded: $ADDED"
   exit 1
 fi
 
@@ -41,7 +42,7 @@ fi
 MODIFIED=$(git diff --name-only origin/master | grep ".json$")
 if [ -z "$MODIFIED" ]; then
   echo No symbol info files were modified
-  gh pr review "$GITHUB_HEAD_REF" -r -b "No symbol info files (JSON) were modified"
+  gh pr review $PR_NUMBER -r -b "No symbol info files (JSON) were modified"
   exit 1
 fi
 
@@ -65,7 +66,7 @@ for F in $MODIFIED; do
   RESULT=$(grep -c FAIL report.txt)
   REPORT=$(cat report.txt)
   FILE_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_HEAD_REF/$F"
-  PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+  
 
   [ "$RESULT" -ne 0 ] && gh pr review $PR_NUMBER -c -b "$REPORT"
   [ "$RESULT" -ne 0 ] && gh pr review $PR_NUMBER -r -b "Proposed changes to file [$F]($FILE_URL) are invalid"
