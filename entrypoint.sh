@@ -11,8 +11,8 @@ git fetch origin --depth=1 > /dev/null 2>&1
 # check for deleted JSON files
 DELETED=$(git diff --name-only --diff-filter=D origin/master)
 if [ -n "$DELETED" ]; then
-  echo Deleting files is forbidden > deleted_report
-  echo These files were deleted: >> deleted_report
+  echo "### :red_circle: Deleting JSON files is forbidden" > deleted_report
+  echo "#### These files were deleted:" >> deleted_report
   echo "$DELETED" >> deleted_report
   DELETED_REPORT=$(cat deleted_report)
   gh pr review $PR_NUMBER -r -b "$DELETED_REPORT"
@@ -33,10 +33,11 @@ fi
 # check for added JSON files
 ADDED=$(git diff --name-only --diff-filter=A origin/master)
 if [ -n "$ADDED" ]; then
-  echo Adding files is forbidden
-  echo These files were added:
-  echo "$ADDED"
-  gh pr review $PR_NUMBER -r -b "Adding files is forbidden\nAdded: $ADDED"
+  echo "### :red_circle: Adding JSON files is forbidden" > added_report
+  echo "#### These files were added:" >> added_report
+  echo "$ADDED" >> added_report
+  ADDED_REPORT=$(cat added_report)
+  gh pr review $PR_NUMBER -r -b "$ADDED_REPORT"
   exit 1
 fi
 
@@ -61,21 +62,21 @@ echo inpsect info: $(./inspect version)
 
 # check files
 FAILED=false
+
 for F in $MODIFIED; do
   echo Checking "$F"
   ./inspect symfile --old="$F.old" --new="$F.new" --log-file=stdout --report-file=report.txt --report-format=github
   ./inspect symfile diff --old="$F.old" --new="$F.new" --log-file=stdout
   RESULT=$(grep -c FAIL report.txt)
-  REPORT=$(cat report.txt)
-  FILE_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/$GITHUB_HEAD_REF/$F"
-  
-
-  [ "$RESULT" -ne 0 ] && gh pr review $PR_NUMBER -c -b "$REPORT"
-  [ "$RESULT" -ne 0 ] && gh pr review $PR_NUMBER -r -b "Proposed changes to file [$F]($FILE_URL) are invalid"
-  [ "$RESULT" -eq 0 ] && gh pr review $PR_NUMBER -a -b "$REPORT"
+  echo "#### $F" >> full_report.txt
+  cat report.txt >> full_report.txt
   [ "$RESULT" -ne 0 ] && FAILED=true
 done
 
+FULL_REPORT=$(cat full_report.txt)
+
+[ $FAILED = "true" ] && gh pr review $PR_NUMBER -r -b "$FULL_REPORT"
+[ $FAILED = "false" ] && gh pr review $PR_NUMBER -a -b "$FULL_REPORT"
 [ $FAILED = "true" ] && echo some tests have failed && exit 1
 
 # upload symbol info
@@ -91,5 +92,3 @@ done
 # merge PR
 echo ready to merge
 # gh pr merge $PR_NUMBER --merge --delete-branch
-
-
