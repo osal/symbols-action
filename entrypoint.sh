@@ -53,7 +53,7 @@ fi
 for F in $MODIFIED; do cp "$F" "$F.new"; done
 
 # save old versions
-git checkout -b old origin/master
+git checkout -b old origin/$ENVIRONMENT
 for F in $MODIFIED; do cp "$F" "$F.old"; done
 
 # download inspect tool
@@ -99,6 +99,6 @@ echo ready to merge
 gh pr merge $PR_NUMBER --merge --delete-branch
 
 if [ $ENVIRONMENT = "production" ]; then
-  # reset staging branch to master (they have to be identical after push into master)
+  # reset 'staging' branch to 'production' (they have to be identical after push into 'production')
   git checkout staging && git reset production --hard && git push -f origin HEAD
 fi
