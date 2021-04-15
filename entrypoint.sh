@@ -85,10 +85,20 @@ INTEGRATION_NAME=${GITHUB_REPOSITORY##*/}
 for F in $MODIFIED;
 do
   FINAL_NAME=${INTEGRATION_NAME}_$(basename "$F")
-  echo uploading $F.new to $S3_BUCKET_SYMBOLS/$SYMBOLS_PREFIX/$FINAL_NAME
-  # aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/$SYMBOLS_PREFIX/$FINAL_NAME" --no-progress
+  echo uploading $F.new to $S3_BUCKET_SYMBOLS/$ENVIRONMENT/$FINAL_NAME
+  aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/$ENVIRONMENT/$FINAL_NAME" --no-progress
+  if [ $ENVIRONMENT = "production" ]; then
+    # upload also to staging bucket
+    echo uploading $F.new to $S3_BUCKET_SYMBOLS/staging/$FINAL_NAME
+    aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/staging/$FINAL_NAME" --no-progress
+  fi
 done
 
 # merge PR
 echo ready to merge
-# gh pr merge $PR_NUMBER --merge --delete-branch
+gh pr merge $PR_NUMBER --merge --delete-branch
+
+if [ $ENVIRONMENT = "production" ]; then
+  # reset staging branch to master (they have to be identical after push into master)
+  git checkout staging && git reset production --hard && git push -f origin HEAD
+fi
