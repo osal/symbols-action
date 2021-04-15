@@ -100,5 +100,5 @@ gh pr merge $PR_NUMBER --merge --delete-branch
 
 if [ $ENVIRONMENT = "production" ]; then
   # reset 'staging' branch to 'production' (they have to be identical after push into 'production')
-  git checkout staging && git reset origin/production --hard && git push -f origin HEAD
+  git fetch && git checkout staging && git reset origin/production --hard && git push -f origin HEAD
 fi
