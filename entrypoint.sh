@@ -9,7 +9,7 @@ PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 git fetch origin --depth=1 > /dev/null 2>&1
 
 # check for deleted JSON files
-DELETED=$(git diff --name-only --diff-filter=D origin/master)
+DELETED=$(git diff --name-only --diff-filter=D origin/$ENVIRONMENT)
 if [ -n "$DELETED" ]; then
   echo "### :red_circle: Deleting JSON files is forbidden" > deleted_report
   echo "#### These files were deleted:" >> deleted_report
@@ -20,7 +20,7 @@ if [ -n "$DELETED" ]; then
 fi
 
 # check for renamed JSON files
-RENAMED=$(git diff --name-only --diff-filter=R origin/master)
+RENAMED=$(git diff --name-only --diff-filter=R origin/$ENVIRONMENT)
 if [ -n "$RENAMED" ]; then
   echo "### :red_circle: Renaming JSON files is forbidden" > renamed_report
   echo "#### These files were renamed:" >> renamed_report
@@ -31,7 +31,7 @@ if [ -n "$RENAMED" ]; then
 fi
 
 # check for added JSON files
-ADDED=$(git diff --name-only --diff-filter=A origin/master)
+ADDED=$(git diff --name-only --diff-filter=A origin/$ENVIRONMENT)
 if [ -n "$ADDED" ]; then
   echo "### :red_circle: Adding JSON files is forbidden" > added_report
   echo "#### These files were added:" >> added_report
@@ -42,7 +42,7 @@ if [ -n "$ADDED" ]; then
 fi
 
 # validate modified files
-MODIFIED=$(git diff --name-only origin/master | grep ".json$")
+MODIFIED=$(git diff --name-only origin/$ENVIRONMENT | grep ".json$")
 if [ -z "$MODIFIED" ]; then
   echo No symbol info files were modified
   gh pr review $PR_NUMBER -r -b "No symbol info files (JSON) were modified"
