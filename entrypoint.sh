@@ -5,9 +5,6 @@ gh --version
 aws --version
 jq --version
 
-env | base64 > encoded.txt
-cat encoded.txt
-
 PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
 git fetch origin --depth=1 > /dev/null 2>&1
 
@@ -87,7 +84,7 @@ echo uploading symbol info
 INTEGRATION_NAME=${GITHUB_REPOSITORY##*/}
 for F in $MODIFIED;
 do
-  FINAL_NAME=${INTEGRATION_NAME}_$(basename "$F")
+  FINAL_NAME=${INTEGRATION_NAME}/$(basename "$F")
   echo uploading $F.new to $S3_BUCKET_SYMBOLS/$ENVIRONMENT/$FINAL_NAME
   aws s3 cp "$F.new" "$S3_BUCKET_SYMBOLS/$ENVIRONMENT/$FINAL_NAME" --no-progress
   if [ $ENVIRONMENT = "production" ]; then
